@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ตารางหอผู้ป่วย
+model Ward {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  users       User[]
+  evaluations Evaluation[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// ตารางผู้ใช้งาน
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  name      String
+  role      String   // 'ADMIN' หรือ 'HEAD_NURSE'
+  wardId    Int?
+  ward      Ward?    @relation(fields: [wardId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ตารางการประเมิน (1 แฟ้ม)
+model Evaluation {
+  id            Int      @id @default(autoincrement())
+  wardId        Int
+  ward          Ward     @relation(fields: [wardId], references: [id])
+  hn            String
+  an            String
+  date          DateTime @default(now())
+  fiscalYear    String   @default("2569")
+  evaluatorName String
+  totalScore    Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  details       EvaluationDetail[]
+}
+
+// ตารางรายละเอียดคะแนนการประเมินแต่ละข้อ
+model EvaluationDetail {
+  id           Int        @id @default(autoincrement())
+  evaluationId Int
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  criteriaId   String     
+  score        Float      
+}
