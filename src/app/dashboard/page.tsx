@@ -2,10 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { PrismaClient } from '@prisma/client';
 import FilterControls from './FilterControls';
+import { getSession } from '@/lib/auth';
+import DashboardHeaderActions from './DashboardHeaderActions';
 
 const prisma = new PrismaClient();
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const session = await getSession();
+  const isAdmin = session?.role === 'ADMIN';
+
   const resolvedParams = await searchParams;
   const year = typeof resolvedParams.year === 'string' ? resolvedParams.year : 'all';
   const ward = typeof resolvedParams.ward === 'string' ? resolvedParams.ward : 'all';
@@ -88,14 +93,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               รายงานสรุปผลการประเมิน (Dashboard)
             </h1>
           </div>
-          <div className="flex items-center space-x-4">
-            <Link href="/evaluation" className="hidden md:flex text-sm font-bold bg-primary-50 text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-100 transition-colors">
-              + ประเมินแฟ้มใหม่
-            </Link>
-            <Link href="/" className="text-sm font-medium text-slate-500 hover:text-primary-600 transition-colors">
-              ออกจากระบบ
-            </Link>
-          </div>
+          <DashboardHeaderActions isAdmin={isAdmin} />
         </div>
       </header>
 

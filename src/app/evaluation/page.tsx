@@ -21,10 +21,12 @@ export default function EvaluationForm() {
   // Initial load
   useEffect(() => {
     setDate(new Date().toISOString().split('T')[0]);
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setEvaluatorName(storedUser);
-    }
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) setEvaluatorName(data.user.name);
+      })
+      .catch(() => {});
   }, []);
 
   const wardsList = [

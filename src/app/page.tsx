@@ -13,21 +13,39 @@ export default function Home() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
     if (!username || !password) {
-      alert('กรุณากรอกรหัสประจำตัวและรหัสผ่านให้ครบถ้วน');
+      setErrorMsg('กรุณากรอกรหัสประจำตัวและรหัสผ่านให้ครบถ้วน');
       return;
     }
 
     setIsLoading(true);
     
-    // จำลองการโหลดและตรวจสอบข้อมูล (Mock Login)
-    setTimeout(() => {
-      // บันทึกชื่อผู้ใช้ลง LocalStorage เพื่อนำไปแสดงเป็น "ชื่อผู้ประเมิน" ในหน้าฟอร์ม
-      localStorage.setItem('currentUser', username);
-      router.push('/evaluation');
-    }, 800);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        // บันทึกชื่อผู้ใช้ลง LocalStorage ไว้แสดงผลเล็กๆ น้อยๆ ได้เหมือนเดิม
+        localStorage.setItem('currentUser', data.user.name);
+        router.push('/evaluation');
+      } else {
+        setErrorMsg(data.error || 'การเข้าสู่ระบบล้มเหลว');
+      }
+    } catch (err) {
+      setErrorMsg('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -107,6 +125,11 @@ export default function Home() {
                     placeholder="••••••••" 
                   />
                 </div>
+                {errorMsg && (
+                  <div className="bg-red-50 text-red-500 p-3 rounded-lg text-sm text-center border border-red-100">
+                    {errorMsg}
+                  </div>
+                )}
                 <div className="pt-4">
                   <button 
                     type="submit" 

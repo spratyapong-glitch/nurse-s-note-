@@ -17,12 +17,12 @@ model Ward {
   updatedAt   DateTime     @updatedAt
 }
 
-// ตารางผู้ใช้งาน
 model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
+  password  String
   name      String
-  role      String   // 'ADMIN' หรือ 'HEAD_NURSE'
+  role      String   @default("NURSE") // 'ADMIN' หรือ 'NURSE'
   wardId    Int?
   ward      Ward?    @relation(fields: [wardId], references: [id])
   createdAt DateTime @default(now())
